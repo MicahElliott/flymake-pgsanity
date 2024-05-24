@@ -6,7 +6,7 @@ AFAIK this is the only implementation of an SQL linter for flymake (even
 though it's very simple). Also included here is a recipe for running such
 linters in CI (eg, Github Actions). And some bonus syntax highlighting tips.
 
-This does not attempt to edit code -- just to identify (with squiggly lines)
+This does not attempt to edit code -- just to _identify_ (with squiggly lines)
 problems as you type them.
 
 You'll need [pgsanity](https://github.com/markdrago/pgsanity) for any of this
@@ -15,33 +15,49 @@ PostgreSQL-only.
 
 ## Emacs linting
 
-There are already similar SQL linters available for flycheck, but I've been trying
-to get everything I use onto the built-in flymake.
+There are already similar SQL linters available for
+[flycheck](https://www.flycheck.org/), but I've been trying to get everything
+I use onto the built-in flymake.
+
+To use with your Emacs, put `flymake-pgsanity.el` onto your load-path, and:
+
+```lisp
+;; (add-to-list 'load-path "~/.../vendor") ; wherever you keep non-melpa additions
+(require 'flymake-pgsanity)
+(add-hook 'sql-mode-hook 'flymake-pgsanity-setup)
+```
+
+Then freshly open a `.sql` file and it should start highlighting any errors.
+
+If you want to use a different linter/script, _customize_
+`flymake-pgsanity-program`. Eg, set it to `hugslint` (after putting
+[it](hugslint) on your `path`) if you use Hugs.
 
 ## SQL-like files (HugSQL, PugSQL, etc)
 
-If you are only interested in editing/checking of straight SQL files, ignore
-this section.
+_(If you are only interested in editing/checking of straight SQL files, ignore
+this section.)_
 
 The whole reason I started this effort was for some silly mistakes I'd been
-making in tweaking Hugs `.sql` files. The errors would have been immediately
-caught by a linter (instead of at runtime!), if only there was one.
+making in tweaking [HugSQL](https://www.hugsql.org/) `.sql` files. The errors
+would have been immediately caught by a linter (instead of at runtime!), if
+only there was one.
 
 The trick is having a very simple preprocessor (`sed` one-liner script,
 included) that can convert the special `:foo-bar` parameters into something
 that a standard SQL linter can handle. I tried converting them all to basic
-strings like `'foo-bar-XXX'` and it worked. Yes, it also supports those weird
+strings like `'foo-bar-XXX'` and it worked! Yes, it also supports those weird
 params like `:v*:so-weird`.
 
 The other necessary bits to make pgsanity happy involve you manually
 "improving" your Hugs files:
 
 - manually add semicolons (`;`) to the ends of each SQL statement, which
-  pgsanity needs and Hugs doesn't mind.
+  pgsanity needs and Hugs doesn't mind
 
 - don't end with a dangling `WHERE`
 
-For the last case, here's an example:
+For that last case, here's an example:
 
 ```
 problem:
@@ -95,6 +111,6 @@ I suppose it'd be nice to color the _list_ (`:v*:...`) types differently.
 
 ## Other related/interesting projects
 
+- [sqllint](https://github.com/purcell/sqlint) (awesome! but flycheck, not flymake)
 - [sqlfluff](https://github.com/sqlfluff/sqlfluff)
-- [sqllint](https://github.com/purcell/sqlint) (flycheck)
 - [sql-lint](https://github.com/joereynolds/sql-lint)

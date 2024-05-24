@@ -5,7 +5,6 @@
 ;; Author: Micah Elliott <mde@micahelliott.com>
 ;; URL: https://github.com/micahelliott/flymake-pgsanity
 ;; Package-Version: 0
-;; Package-Requires: ((flymake-easy "0.1"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -52,7 +51,8 @@
   (message "running flymake-pgsanity")
   ;; Not having an interpreter is a serious problem which should cause
   ;; the backend to disable itself, so an error is signaled.
-  (unless (executable-find flymake-pgsanity-program) (error "Cannot find a suitable pglint"))
+  (unless (executable-find flymake-pgsanity-program)
+    (error "Could not find '%s' executable" flymake-pgsanity-program))
   ;; (unless (executable-find "ruby") (error "Cannot find a suitable ruby 2"))
   ;; If a live process launched in an earlier check was found, that
   ;; process is killed.  When that process's sentinel eventually runs,
@@ -70,7 +70,8 @@
         :name "flymake-pgsanity" :noquery t :connection-type 'pipe
         :buffer (generate-new-buffer " *flymake-pgsanity*") ; Make output go to a temporary buffer.
         ;; :command '("ruby" "-w" "-c")
-        :command '(flymake-pgsanity-program)
+        ;; :command '("hugslint")
+        :command (list flymake-pgsanity-program)
         :sentinel
         (lambda (proc _event)
           ;; Check that the process has indeed exited, as it might be simply suspended.
@@ -99,9 +100,15 @@
       (process-send-eof pgsanity--flymake-proc))))
 
 (defun pgsanity-setup-flymake-backend ()
+  "Add pgsanity to diagnostics."
   (add-hook 'flymake-diagnostic-functions 'flymake-pgsanity nil t))
 
-(add-hook 'sql-mode-hook 'pgsanity-setup-flymake-backend)
+;; (add-hook 'sql-mode-hook 'pgsanity-setup-flymake-backend)
+
+;;;###autoload
+(defun flymake-pgsanity-setup ()
+  "Enable pgsanity flymake backend."
+  (add-hook 'flymake-diagnostic-functions #'flymake-pgsanity nil t))
 
 (provide 'flymake-pgsanity)
 ;;; flymake-pgsanity.el ends here
