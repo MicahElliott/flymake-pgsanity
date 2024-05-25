@@ -33,7 +33,7 @@
 
 (defvar-local pgsanity--flymake-proc nil)
 
-(message "loading flymake-pgsanity package")
+;; (message "loading flymake-pgsanity package")
 
 (defgroup flymake-pgsanity nil
   "Pgsanity backend for Flymake."
@@ -48,12 +48,10 @@
 
 
 (defun flymake-pgsanity (report-fn &rest _args)
-  (message "running flymake-pgsanity")
-  ;; Not having an interpreter is a serious problem which should cause
-  ;; the backend to disable itself, so an error is signaled.
+  ;; (message "running flymake-pgsanity")
+  ;; Not having an interpreter is a serious problem
   (unless (executable-find flymake-pgsanity-program)
     (error "Could not find '%s' executable" flymake-pgsanity-program))
-  ;; (unless (executable-find "ruby") (error "Cannot find a suitable ruby 2"))
   ;; If a live process launched in an earlier check was found, that
   ;; process is killed.  When that process's sentinel eventually runs,
   ;; it will notice its obsoletion, since it have since reset
@@ -63,25 +61,25 @@
   (let ((source (current-buffer)))
     (save-restriction
       (widen)
-      ;; Reset the `pgsanity--flymake-proc' process to a new process calling the ruby tool.
+      ;; Reset the `pgsanity--flymake-proc' process to a new process calling the lint tool.
       (setq
        pgsanity--flymake-proc
        (make-process
         :name "flymake-pgsanity" :noquery t :connection-type 'pipe
         :buffer (generate-new-buffer " *flymake-pgsanity*") ; Make output go to a temporary buffer.
-        ;; :command '("ruby" "-w" "-c")
-        ;; :command '("hugslint")
         :command (list flymake-pgsanity-program)
         :sentinel
         (lambda (proc _event)
           ;; Check that the process has indeed exited, as it might be simply suspended.
           (when (memq (process-status proc) '(exit signal))
             (unwind-protect
-                ;; Only proceed if `proc' is the same as `pgsanity--flymake-proc', which indicates that `proc' is not an obsolete process.
+                ;; Only proceed if `proc' is the same as `pgsanity--flymake-proc',
+                ;; which indicates that `proc' is not an obsolete process.
                 (if (with-current-buffer source (eq proc pgsanity--flymake-proc))
                     (with-current-buffer (process-buffer proc)
                       (goto-char (point-min))
-                      ;; Parse the output buffer for diagnostic's messages and locations, collect them in a list of objects, and call `report-fn'.
+                      ;; Parse the output buffer for diagnostic's messages and locations,
+                      ;; collect them in a list of objects, and call `report-fn'.
                       (cl-loop
                        while (search-forward-regexp "^line \\([0-9]+\\): \\(ERROR\\): \\(.*\\)$" nil t)
                               ;; "^\\(?:.*.rb\\|-\\):\\([0-9]+\\): \\(.*\\)$"

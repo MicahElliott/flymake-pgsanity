@@ -114,3 +114,5 @@ I suppose it'd be nice to color the _list_ (`:v*:...`) types differently.
 - [sqllint](https://github.com/purcell/sqlint) (awesome! but flycheck, not flymake)
 - [sqlfluff](https://github.com/sqlfluff/sqlfluff)
 - [sql-lint](https://github.com/joereynolds/sql-lint)
+- [flymake-diagnostic-at-point](https://github.com/meqif/flymake-diagnostic-at-point)
+- [captain](https://github.com/MicahElliott/captain) (for local git-hooking)
