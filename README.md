@@ -1,4 +1,4 @@
-# flymake-pgsanity and sql linting beyond Emacs
+# flymake-pgsanity and SQL linting beyond Emacs
 
 Lint your SQL (and even funky templated SQL!) in Emacs with
 [flymake](https://www.gnu.org/software/emacs/manual/html_node/flymake/index.html).

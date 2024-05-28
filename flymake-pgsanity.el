@@ -3,8 +3,10 @@
 ;; Copyright (c) 2024 Micah Elliott
 
 ;; Author: Micah Elliott <mde@micahelliott.com>
-;; URL: https://github.com/micahelliott/flymake-pgsanity
-;; Package-Version: 0
+;; Maintainer: Micah Elliott <mde@micahelliott.com>
+;; Homepage: https://github.com/micahelliott/flymake-pgsanity
+;; Package-Requires: ((emacs "27.1"))
+;; Package-Version: 0.1
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -23,6 +25,11 @@
 
 ;; Usage:
 ;;   (require 'flymake-pgsanity)
+;;   (add-hook 'sql-mode-hook 'flymake-pgsanity-setup)
+;;
+;; See the Homepage for details on using this with templated SQL such as
+;; HugSQL, how to customize/use its provided wrapper script, and some syntax
+;; and CI recipes.
 ;;
 ;; Derived largely from ruby example:
 ;; https://www.gnu.org/software/emacs/manual/html_node/flymake/An-annotated-example-backend.html
