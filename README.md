@@ -9,9 +9,16 @@ linters in CI (eg, Github Actions). And some bonus syntax highlighting tips.
 This does not attempt to edit code -- just to _identify_ (with squiggly lines)
 problems as you type them.
 
-You'll need [pgsanity](https://github.com/markdrago/pgsanity) for any of this
-to work. It's broadly available via any package manager. And this is
-PostgreSQL-only.
+You'll need [ecpg](https://www.postgresql.org/docs/current/app-ecpg.html) for
+any of this to work. It's broadly available via any package manager. And this
+is PostgreSQL-only.
+
+You'll also need Captain's [huglint](TODO) to make this work.
+
+Historic note: this project used to depend on
+[pgsanity](https://github.com/markdrago/pgsanity), but that dep was removed
+when I determined that it was such a tiny (and buggy) wrapper around `ecpg`,
+that I could replace any need for Python with one line of `sed`.
 
 ## Emacs linting
 
@@ -30,8 +37,8 @@ To use with your Emacs, put `flymake-pgsanity.el` onto your load-path, and:
 Then freshly open a `.sql` file and it should start highlighting any errors.
 
 If you want to use a different linter/script, _customize_
-`flymake-pgsanity-program`. Eg, set it to `hugslint` (after putting
-[it](hugslint) on your `path`) if you use Hugs.
+`flymake-pgsanity-program`. Eg, set it to `huglint` (after putting
+[it](huglint) on your `path`) if you use Hug.
 
 ## SQL-like files (HugSQL, PugSQL, etc)
 
@@ -49,11 +56,11 @@ that a standard SQL linter can handle. I tried converting them all to basic
 strings like `'foo-bar-XXX'` and it worked! Yes, it also supports those weird
 params like `:v*:so-weird`.
 
-The other necessary bits to make pgsanity happy involve you manually
-"improving" your Hugs files:
+The other necessary bits to make ecpg happy involve you manually
+"improving" your Hug files:
 
 - manually add semicolons (`;`) to the ends of each SQL statement, which
-  pgsanity needs and Hugs doesn't mind
+  ecpg needs and Hug doesn't mind
 
 - don't end with a dangling `WHERE`
 
@@ -71,24 +78,22 @@ WHERE TRUE
 
 ## In CI
 
-Here's a recipe for running pgsanity in Github Actions. This installs the
-dependencies, [ecpg](https://www.postgresql.org/docs/current/app-ecpg.html)
-and [pgsanity](https://github.com/markdrago/pgsanity), and a custom
-[pgsanity-wrapper](pgsanity-ci.sh) linter (which you'll edit to suit your
-needs) that will reject the build.
+Here's a recipe for running ecpg in Github Actions. This installs the
+dependency, [ecpg](https://www.postgresql.org/docs/current/app-ecpg.html), and
+a custom [pgsanity-wrapper](pgsanity-ci.sh) linter (which you'll edit to suit
+your needs) that will reject the build.
 
 ```yaml
 jobs:
   checks:
 
-    - name: Install ecpg Postgres FE and pgsanity SQL linter
+    - name: Install ecpg Postgres FE
       run: |
         sudo apt-get install libecpg-dev
-        sudo pip install pgsanity
-
+        
     ...
 
-    - name: Check for any lint warnings/errors in sql files (pgsanity)
+    - name: Check for any lint warnings/errors in sql files (ecpg)
       run: ./deploy/bin/pgsanity-ci.sh
 ```
 
@@ -101,13 +106,33 @@ with this:
 (defface sql-field '((t (:foreground "#528fd1" :weight ultra-bold))) "My SQL Field")
 (font-lock-add-keywords 'sql-mode '((" :\\(v\\*:\\)?[-a-z0-9?]+"  0 'sql-field t)))
 
-;; Other Hugs goodies
+;; Other Hug goodies
 (font-lock-add-keywords 'sql-mode '(("-- :doc .*" 0 'doc-field t)))
 (font-lock-add-keywords 'sql-mode '(("-- :name [^:]+" 0 'special-comment t)))
 (font-lock-add-keywords 'sql-mode '((" \\(:\\*\\|:!\\|:n\\|:\\?\\|:1\\)" 0 'boolean-true t)))
 ```
 
 I suppose it'd be nice to color the _list_ (`:v*:...`) types differently.
+
+## Hug in imenu
+
+Neat way to see list of a hug file's functions in imenu:
+
+```
+(setq hug-imenu-generic-expression
+      '(("SELECTS" "^-- :name \\([-a-z0-9?!]+\\) .*:\\?" 1)
+        ("EXECS"   "^-- :name \\([-a-z0-9?!]+\\) .*:!" 1)
+        ("INSERTS" "^-- :name \\([-a-z0-9?!]+\\) .*:i!" 1)))
+(add-hook 'sql-mode-hook (lambda ()  (setq imenu-generic-expression
+hug-imenu-generic-expression)))
+```
+
+Based simply on `:?` and `:!` as
+[detailed here](https://www.hugsql.org/hugsql-in-detail/command).
+
+Shown here with `[imenu-list-smart-toggle](https://github.com/bmag/imenu-list)`and `[consult-imenu](https://github.com/minad/consult)`.
+
+This also got me realizing it's useful to organize hug files into something like those 3 sections.
 
 ## Other related/interesting projects
 

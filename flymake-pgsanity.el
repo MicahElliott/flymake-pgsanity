@@ -48,9 +48,9 @@
   :group 'tools)
 
 (defcustom flymake-pgsanity-program
-  "pgsanity"
+  "huglint"
   "Name of to the `sqllint' executable."
-  ;; Alternatives are: hugslint (for hugsql preprocessing), or a script of your own.
+  ;; Alternatives are: huglint (for hugsql preprocessing), or a script of your own.
   :type 'string)
 
 
@@ -88,7 +88,10 @@
                       ;; Parse the output buffer for diagnostic's messages and locations,
                       ;; collect them in a list of objects, and call `report-fn'.
                       (cl-loop
-                       while (search-forward-regexp "^line \\([0-9]+\\): \\(ERROR\\): \\(.*\\)$" nil t)
+                       ;; pgsanity output: line 5: ERROR: syntax error at or near ","
+                       ;; while (search-forward-regexp "^line \\([0-9]+\\): \\(ERROR\\): \\(.*\\)$" nil t)
+                       ;; ecpg output:     stdin:424: ERROR: syntax error at or near ","
+                       while (search-forward-regexp "^stdin:\\([0-9]+\\): \\(ERROR\\): \\(.*\\)$" nil t)
                               ;; "^\\(?:.*.rb\\|-\\):\\([0-9]+\\): \\(.*\\)$"
                        for msg = (match-string 3)
                        for (beg . end) = (flymake-diag-region source (string-to-number (match-string 1)))
